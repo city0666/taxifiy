@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React,{useState,useEffect,useCallback} from 'react';
-import { StyleSheet, Text, View,ScrollView,Input,Dimensions ,TextInput,ActivityIndicator,TouchableHighlight } from 'react-native';
+import { StyleSheet, Text, View,ScrollView,Input,Dimensions ,TextInput,ActivityIndicator,TouchableHighlight, Alert } from 'react-native';
 import MapView , { Polyline, Marker ,PROVIDER_GOOGLE} from 'react-native-maps';
 import * as Location from 'expo-location';
 import _ from "lodash";
@@ -11,9 +11,13 @@ const RiderHome = ({navigation}) => {
 
   const [location, setlocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const onChangeDestinationDebounced = useCallback(_.debounce(onChangeDestination, 1000), []);
+  // const onChangeDestinationDebounced = useCallback(_.debounce(onChangeDestination, 1000), []);
   const [destination, setdestination] = useState(null); 
   const [predictions, setpredictions] = useState([]); 
+   let onChangeDestinationDebounced = null;
+   if (!destination){
+    onChangeDestinationDebounced = _.debounce(onChangeDestination,1000);
+   }
 
   useEffect(() => {
     async function cureentlocation() {
@@ -69,72 +73,72 @@ async function onChangeDestination (destination) {
   try {
     const result = await fetch(apiUrl);
     const json = await result.json();
-    setpredictions(json.prediction)
+    setpredictions(json.predictions)
+    const text = JSON.stringify(json.predictions);
+
     // this.setState({
     //   predictions: json.predictions
     // });
-    console.log(json);
+    console.log(text);
+    Alert.alert(text)
   } catch (err) {
     console.error(err);
   }
 }
-if (predictions != null) {
-   predictions.map(prediction => (
-    <TouchableHighlight
-      onPress={() =>
-        getRouteDirections(
-          prediction.place_id,
-          prediction.structured_formatting.main_text
-        )
-     }
-      key={prediction.id}
-    >
-      <View>
-        <Text style={styles.suggestions}>
-          {prediction.structured_formatting.main_text}
-        </Text>
-      </View>
-    </TouchableHighlight>
-  ));
-}
+// if (predictions != null) {
+//    predictions.map(prediction => (
+//     <TouchableHighlight
+//       onPress={() =>
+//         getRouteDirections(
+//           prediction.place_id,
+//           prediction.structured_formatting.main_text
+//         )
+//      }
+//       key={prediction.id}
+//     >
+//       <View>
+//         <Text style={styles.suggestions}>
+//           {prediction.structured_formatting.main_text}
+//         </Text>
+//       </View>
+//     </TouchableHighlight>
+//   ));
+// }
 
 
-async function getRouteDirections(destinationPlaceId, destinationName) {
-  try {
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/directions/json?origin=${
-        location.coords.latitude
-      },${
-        location.coords.longitude
-      }&destination=place_id:${destinationPlaceId}&key=${apiKey}`
-    );
-    const json = await response.json();
-    console.log(json);
-   // const points = PolyLine.decode(json.routes[0].overview_polyline.points);
-    //const pointCoords = points.map(point => {
-     // return { latitude: point[0], longitude: point[1] };
-    //});
+// async function getRouteDirections(destinationPlaceId, destinationName) {
+//   try {
+//     const response = await fetch(
+//       `https://maps.googleapis.com/maps/api/directions/json?origin=${
+//         location.coords.latitude
+//       },${
+//         location.coords.longitude
+//       }&destination=place_id:${destinationPlaceId}&key=${apiKey}`
+//     );
+//     const json = await response.json();
+//     console.log(json);
+//    // const points = PolyLine.decode(json.routes[0].overview_polyline.points);
+//     //const pointCoords = points.map(point => {
+//      // return { latitude: point[0], longitude: point[1] };
+//     //});
 
-    // this.setState({
-    //   pointCoords,
-    //   predictions: [],
-    //   destination: destinationName,
-    //   routeResponse: json,
-    // });
-    Keyboard.dismiss();
-    this.map.fitToCoordinates(pointCoords);
-  } catch (error) {
-    console.error(error);
-  }
-}
+//     // this.setState({
+//     //   pointCoords,
+//     //   predictions: [],
+//     //   destination: destinationName,
+//     //   routeResponse: json,
+//     // });
+//     Keyboard.dismiss();
+//     this.map.fitToCoordinates(pointCoords);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
 
   return (
     <View style={styles.container}>
         <MapView
-        //   ref={map => {
-        //     this.map = map;
-        //   }}
-          
+         
           style={styles.mapStyle}
           provider={PROVIDER_GOOGLE}
 
@@ -160,7 +164,7 @@ async function getRouteDirections(destinationPlaceId, destinationName) {
 
         
         />
-        {predictions}
+        {/* {predictions} */}
      </View>
   );
 };
