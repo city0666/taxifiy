@@ -7,12 +7,13 @@ import {
   Keyboard,
   TouchableHighlight,
   TouchableOpacity,
-  Image
+  Image, Alert
 } from "react-native";
 import MapView, { Polyline, Marker ,PROVIDER_GOOGLE} from "react-native-maps";
 import apiKey from "./google_api_key";
 import _ from "lodash";
 import PolyLine from "@mapbox/polyline";
+import {useSelector,useDispatch} from 'react-redux';
 // import socketIO from "socket.io-client";
 
 export default class test extends Component {
@@ -69,16 +70,17 @@ export default class test extends Component {
         longitudeDelta: 0.040142817690068,
       },
     };
-    
+
     this.onChangeDestinationDebounced = _.debounce(
       this.onChangeDestination,
       1000
     );
   }
-    
+   
   
   componentDidMount() {
     //Get current location and set initial region to this
+
     navigator.geolocation.getCurrentPosition(
       position => {
         this.setState({
@@ -121,6 +123,7 @@ export default class test extends Component {
   }
 
   async onChangeDestination(destination) {
+    
     const apiUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?key=${apiKey}
     &input=${destination}&location=${this.state.latitude},${
       this.state.longitude
@@ -133,6 +136,8 @@ export default class test extends Component {
         predictions: json.predictions
       });
       console.log(json);
+      const text = JSON.stringify(json.predictions);
+      Alert.alert(text)
     } catch (err) {
       console.error(err);
     }
@@ -168,7 +173,6 @@ export default class test extends Component {
     let marker = null;
     let driverbutton = null;
     let driverMarker = null;
-
 
     if (this.state.driverIsOnTheWay) {
       driverMarker = (
@@ -290,6 +294,8 @@ const styles = StyleSheet.create({
     padding: 15,
     paddingLeft: 30,
     paddingRight: 30,
+    marginLeft: 15,
+    marginRight: 15,
     alignSelf: "center"
   },
   bottomButtonText: {
@@ -303,12 +309,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     borderWidth: 0.5,
     marginLeft: 15,
-    marginRight: 55
+    marginRight: 15,
+    padding: 5,
+    paddingLeft:15,
   },
   destinationInput: {
     height: 50,
     borderWidth: 0.5,
-    marginTop: 55,
+    marginTop: 90,
     borderTopLeftRadius:25,
     marginLeft: 15,
     marginRight: 15,

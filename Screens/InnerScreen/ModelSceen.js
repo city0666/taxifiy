@@ -1,8 +1,12 @@
-import React, { useRef,useState } from 'react';
-import { View, Text,FlatList, Alert,TouchableOpacity,StyleSheet } from 'react-native';
+import React, { useRef,useState,useCallback } from 'react';
+import { View, Text,FlatList, Alert,TouchableOpacity,TouchableHighlight,StyleSheet, TextInput } from 'react-native';
 import { Modalize } from 'react-native-modalize';
 import * as rider from '../../store/actions/rider';
 import {useSelector,useDispatch} from 'react-redux';
+import apiKey from "./google_api_key";
+import _ from "lodash";
+
+
 const DATA = [
   {
     id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
@@ -31,6 +35,9 @@ const Item = ({ item, onPress, style }) => (
 
     const ModelSceen = ({navigation}) => {
       const [selectedId, setSelectedId] = useState(null);
+      const [destination, setdestination] = useState(""); 
+     const [predictions, setpredictions ] = useState([]);
+     //const handler = useCallback(_.debounce(onChangeDestination, 2000), []);
 
       const dispatch = useDispatch();
       const {onlinedrivers} = useSelector((state) =>{
@@ -41,6 +48,9 @@ const Item = ({ item, onPress, style }) => (
 // const renderItem = ({ item }) => (
 //   <Item title={item.title} />
 // );
+
+
+const onChangeDestinationDebounced = _.debounce(onChangeDestination,1000)
 const renderItem = ({ item }) => {
   const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
 
@@ -86,6 +96,34 @@ const renderItem = ({ item }) => {
    
      
    }
+   async function onChangeDestination (destination) {
+    const apiUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?key=${apiKey}
+    &input=${destination}&location=37.785834,-122.406417&radius=2000`;
+    console.log('test',destination,apiUrl)
+    try {
+      const result = await fetch(apiUrl);
+      const json = await result.json();
+      setpredictions(json.predictions)
+     
+    } catch (err) {
+      console.error(err);
+    }
+  }
+const test =predictions.map(prediction =>(
+  <TouchableHighlight
+  onPress={() => Alert.alert('ttt' , prediction.structured_formatting.main_text)}
+  key={prediction.id}
+  >
+  
+  
+  <View>
+          <Text style={styles.suggestions}>
+            {prediction.structured_formatting.main_text}
+          </Text>
+        </View>
+  </TouchableHighlight>));
+  
+
    
    return(
      <>
@@ -94,7 +132,20 @@ const renderItem = ({ item }) => {
 
          <Text style={{color: '#009387', marginTop:15,marginBottom: 15}}>onopensre</Text>
          </TouchableOpacity>
-        
+
+         <TextInput
+          placeholder="Enter destination..."
+          style={styles.destinationInput}
+          value={destination}
+          clearButtonMode="always"
+          onChangeText={destination => {
+            setdestination(destination);
+          onChangeDestinationDebounced(destination);
+          }}
+          
+
+        />
+        {test}
      </View>
      <Modalize ref={modalizeRef}
            handleStyle={{
@@ -139,12 +190,33 @@ const styles = StyleSheet.create({
       backgroundColor: 'gray',
       alignItems: 'center',
       
+    },destinationInput: {
+      height: 50,
+      borderWidth: 0.5,
+      marginTop: 90,
+      width:"70%",
+      borderTopLeftRadius:25,
+      marginLeft: 15,
+      marginRight: 15,
+      padding: 5,
+      paddingLeft:15,
+      backgroundColor: "white"
     },
     item: {
       backgroundColor: '#f9c2ff',
       padding: 20,
       marginVertical: 8,
       marginHorizontal: 16,
+    },
+    suggestions: {
+      backgroundColor: "white",
+      padding: 5,
+      fontSize: 18,
+      borderWidth: 0.5,
+      marginLeft: 15,
+      marginRight: 15,
+      padding: 5,
+      paddingLeft:15,
     },
     title: {
       fontSize: 32,
