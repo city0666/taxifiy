@@ -16,6 +16,7 @@ const RiderHome = ({navigation}) => {
   const [latitude, setlatitude] = useState(0);
   const [location, setlocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [booking,setbooking ] =useState(false);
   // const onChangeDestinationDebounced = useCallback(_.debounce(onChangeDestination, 1000), []);
   const onChangeDestinationDebounced = _.debounce(onChangeDestination,1000); 
   const [destination, setdestination] = useState(""); 
@@ -151,6 +152,7 @@ async function getRouteDirections(destinationPlaceId, destinationName) {
   //   });
 setpredictions([]);
 setdestination(destinationName);
+setbooking(true);
 
     // this.setState({
     //   pointCoords,
@@ -190,6 +192,36 @@ const mapStyle = [
         color: Colors.hoonoblack
       }
     ]
+  },
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: Colors.primary }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#212a37" }],
+  },
+  {
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#9ca5b3" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#746855" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#1f2835" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#f3d19c" }],
   },
   // ...
   {
@@ -232,7 +264,7 @@ const mapStyle = [
         </MapView>
        
        
-         <TextInput
+        {!booking ? ( <TextInput
           placeholder="Enter destination..."
           style={styles.destinationInput}
           value={destination}
@@ -241,9 +273,14 @@ const mapStyle = [
             setdestination(destination);
           onChangeDestinationDebounced(destination);
           }}
-        />
+        />):null}
            {test}
-     
+           {booking ? ( <View style={{position:'absolute', width:'85%',bottom:30,marginHorizontal:30,marginVertical:10,alignContent:'center',justifyContent:'center'}}>
+      <TouchableOpacity style={{backgroundColor:Colors.primary,paddingHorizontal:14,height:45,borderRadius:30,alignContent:'center',justifyContent:'center'}}
+      onPress={setbooking(true)}>
+      <Text style={{textAlign:'center',color:'white',fontWeight:'bold',fontSize:25}}>Book Your Ride</Text>
+</TouchableOpacity>
+     </View>):null}
      </View>
   );
 };
