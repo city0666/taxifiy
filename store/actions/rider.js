@@ -31,25 +31,26 @@ export const getonlinedriver = ( ) => {
       }
       dispatch({ type: "onlinedrivers", sreeraj:resData});
 
-     // dispatch({ type: SIGNUP, token: resData.idToken, userId: resData.localId });
-     //dispatch({ type: SIGNUP, token: resData.token, userId: resData.data.user._id ,email:resData.data.user.email});
-    // dispatch({ type: AUTHENTICATE, userId: userId, token: token, email:email });
-    // dispatch(
-    //   authenticate(
-    //     resData.data.user._id, 
-    //     resData.token,
-    //     resData.data.user.email,
-    //     resData.data.user.name
-    //    // parseInt(resData.expiresIn) * 1000
-    //   )
-    // );
-    // saveDataToStorage( resData.token, resData.data.user._id, resData.data.user.email,resData.data.user.name,resData.data.user.email,);
-    //  const expirationDate = new Date(
-    //   new Date().getTime() + parseInt(resData.expiresIn) * 1000
-    // );
-    // saveDataToStorage(resData.idToken, resData.localId, expirationDate);
-    // saveDataToStorage( resData.token, resData.data.user._id, resData.data.user.email);
-
+     
 
     };
   };
+
+  export const getdirectionfromgoogle = ( placeID,mylocationlongitude,mylocationlatitude ) => {
+    console.log(placeID,mylocationlongitude,mylocationlatitude )
+    return async dispatch => {
+      // any async code you want!
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${
+          mylocationlatitude 
+          },${
+            mylocationlongitude
+          }&destination=place_id:${placeID}&key=AIzaSyCudc5akB8KhWTntNWFff4d4D47pX9dfVM`
+           
+      );
+             const json = await response.json();
+             console.log(json);
+             dispatch({ type: "googleres", googledir:json});
+
+  }
+}

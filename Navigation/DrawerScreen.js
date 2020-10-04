@@ -10,7 +10,7 @@ import {
   } from '@react-navigation/drawer';
 
 import Animated from 'react-native-reanimated';
-import { Feather, AntDesign } from '@expo/vector-icons';
+import { Feather, AntDesign,MaterialCommunityIcons } from '@expo/vector-icons';
 import { Block, Button, Text } from 'expo-ui-kit';
 import { LinearGradient } from 'expo-linear-gradient';
 import color from '../constants/color';
@@ -36,15 +36,16 @@ const Screens = ({ navigation, style }) => {
             headerTitle: null,
             headerLeft: () => (
               <Button transparent onPress={() => navigation.openDrawer()}>
-                <Feather name="wind" size={25} color= {color.hoono}  style={{ paddingHorizontal: 10 }} />
+                <MaterialCommunityIcons name="xbox-controller-menu" size={30} color= {color.hoonowhite}  style={{ paddingHorizontal: 10 }} />
               </Button>
             ),
           }}>
+                      <Stack.Screen name="Home" component={RiderHome}></Stack.Screen>
+
                     <Stack.Screen name="ModelSceen" component={ModelSceen}></Stack.Screen>
 
                     <Stack.Screen name="test" component={test}></Stack.Screen>
 
-          <Stack.Screen name="Home" component={RiderHome}></Stack.Screen>
           <Stack.Screen name="Sockettest" component={Sockettest}></Stack.Screen>
 
           

@@ -7,29 +7,29 @@ import * as Location from 'expo-location';
 import _ from "lodash";
 import Colors from '../../constants/color';
 import apiKey from "./google_api_key";
+import * as rider from '../../store/actions/rider';
+import {useSelector,useDispatch} from 'react-redux';
+
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import color from '../../constants/color';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+
 const RiderHome = ({navigation}) => {
   const [longitude , setlongitude] = useState(0);
   const [latitude, setlatitude] = useState(0);
   const [location, setlocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [booking,setbooking ] =useState(false);
-  // const onChangeDestinationDebounced = useCallback(_.debounce(onChangeDestination, 1000), []);
+  const [pointCoords , setpointCoords] = useState([]);
   const onChangeDestinationDebounced = _.debounce(onChangeDestination,1000); 
   const [destination, setdestination] = useState(""); 
   const [predictions, setpredictions] = useState([]); 
-  //  let onChangeDestinationDebounced = null;
-  //  if (!destination){
-  //   onChangeDestinationDebounced = _.debounce(onChangeDestination,1000);
-  //  }
-//   const onChangeDestinationDebounced = (event) => {
-//     // perform any event related action here
-
-//     handler();
-//  };
+  const dispatch = useDispatch();
+  
+  const {  mylocationlatitude,
+    mylocationlongitude, placeID,googledir} = useSelector((state) =>{
+    return state.rider
+    })
   useEffect(() => {
     async function cureentlocations() {
       let { status } = await Location.requestPermissionsAsync();
@@ -39,60 +39,42 @@ const RiderHome = ({navigation}) => {
     try{
       let appcurrentlocation = await Location.getCurrentPositionAsync({});
       // dispatch({type:"ADD_Location",payload:location})
-      setlocation(appcurrentlocation)
+      //setlocation(appcurrentlocation)
       setlatitude(appcurrentlocation.coords.latitude);
       setlongitude (appcurrentlocation.coords.longitude);
-      console.log(location,"sreeraj")
+      dispatch({type:'mylocationlatitude', payload : appcurrentlocation.coords.latitude});
+      dispatch({type:'mylocationlongitude', payload : appcurrentlocation.coords.longitude})
+
     }
     catch (err) {
       console.error(err);
     }
      
-          
+
+         
     }
   
    
     cureentlocations()
-    const text = JSON.stringify(location);
   
-    console.log(text,"wait..")
+  //   let points = Polyline.decode(googledir.routes[0].overview_polyline.points);
+  //   let coords = points.map((point, index) => {
+  //     return  {
+  //         latitude : point[0],
+  //         longitude : point[1]
+  //     }
+  // })
+  // setpointCoords(coords);
     
 
-    // if (location===null){
-    //   cureentlocation()
-    //   cureentlocation()
-    //   const text = JSON.stringify(location);
-    
-    //   console.log(text,"test..")
-    // }
   }, [])
+if (googledir != null)
+{
+  Alert.alert(googledir)
+}
 
 
 
-// async function onChangeDestination (destination) {
-//   Alert.alert(destination)
-
-//   console.log(location.coords.latitude, 'nullll',destination);
-  // const apiUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?key=${apiKey}
-  // &input=${destination}&location=${latitude},${
-  //   longitude
-  // }&radius=2000`;
-//   console.log(apiUrl);
-//   try {
-//     const result = await fetch(apiUrl);
-//     const json = await result.json();
-//   //  setpredictions(JSON.stringify(json.predictions))
-//     const text = JSON.stringify(json.predictions);
-//     Alert.alert(text)
-//     // this.setState({
-//     //   predictions: json.predictions
-//     // });
-//     console.log(text);
-//     Alert.alert(text)
-//   } catch (err) {
-//     console.error(err);
-//   }
-// }
 
 
 async function onChangeDestination (destination) {
@@ -119,9 +101,7 @@ async function onChangeDestination (destination) {
       onPress={() =>
         getRouteDirections(
           prediction.place_id,
-          prediction.structured_formatting.main_text
-        )
-     }
+          prediction.structured_formatting.main_text )}
       key={prediction.id}
     >
       <View>
@@ -133,7 +113,11 @@ async function onChangeDestination (destination) {
   ));
 
 
-async function getRouteDirections(destinationPlaceId, destinationName) {
+  async function getRouteDirections      (destinationPlaceId = prediction.place_id, destinationName) {
+  dispatch({type:'DirectionApI', payload : destinationPlaceId})
+
+//Alert.alert(placeID,'sss',destinationPlaceId,'ggg',destinationName)
+
   try {
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/directions/json?origin=${
@@ -143,30 +127,48 @@ async function getRouteDirections(destinationPlaceId, destinationName) {
       }&destination=place_id:${destinationPlaceId}&key=${apiKey}`
     );
     const json = await response.json();
-    console.log(json);
-    const token01 = JSON.stringify( json);
-    Alert.alert("Alert Shows After 5 Seconds of Delay.",token01)
-  //  const points = PolyLine.decode(json.routes[0].overview_polyline.points);
-  //   const pointCoords = points.map(point => {
-  //    return { latitude: point[0], longitude: point[1] };
-  //   });
+   
+    
 setpredictions([]);
 setdestination(destinationName);
 setbooking(true);
+   const token01 = JSON.stringify( mylocationlatitude);
 
-    // this.setState({
+     Alert.alert(placeID,destinationPlaceId)
+setlocation(json);
+
+   
+    Keyboard.dismiss();
+  } catch (error) {
+    console.error(error);
+  }
+
+ dispatch(rider.getdirectionfromgoogle(  placeID,mylocationlongitude,mylocationlatitude));
+ polylinegoogledri();
+
+}
+polylinegoogledri =() =>{
+
+  let points = Polyline.decode(json.routes[0].overview_polyline.points);
+   
+    let coords = points.map((point, index) => {
+      return  {
+          latitude : point[0],
+          longitude : point[1]
+      }
+  })
+setpointCoords(coords)
+map.fitToCoordinates(pointCoords);
+
+}
+
+ // this.setState({
     //   pointCoords,
     //   predictions: [],
     //   destination: destinationName,
     //   routeResponse: json,
     // });
-    Keyboard.dismiss();
-   // this.map.fitToCoordinates(pointCoords);
-  } catch (error) {
-    console.error(error);
-  }
-}
-if(location === null){
+if(latitude === null){
   return(
     <View style={{justifyContent:"center",flex:1,alignItems:"center"}}>
           <ActivityIndicator size="large" color={Colors.primary} />
@@ -180,7 +182,7 @@ const mapStyle = [
     elementType: "geometry",
     stylers: [
       {
-        color: Colors.hoonowhite,
+        color: Colors.hoonoblack,
         opacity:0.4
       }
     ]
@@ -196,7 +198,7 @@ const mapStyle = [
   {
     featureType: "road",
     elementType: "geometry",
-    stylers: [{ color: Colors.primary }],
+    stylers: [{ color: Colors.hoono }],
   },
   {
     featureType: "road",
@@ -251,7 +253,7 @@ const mapStyle = [
          
           style={styles.map}
           provider={PROVIDER_GOOGLE}
-          customMapStyle={mapStyle}
+         customMapStyle={mapStyle}
 
           region={{
             latitude: latitude,
@@ -261,6 +263,11 @@ const mapStyle = [
           }}
           showsUserLocation={true}
         >
+           <Polyline
+            coordinates={pointCoords}
+            strokeWidth={4}
+            strokeColor="#7c2b83"
+          />
         </MapView>
        
        
@@ -273,11 +280,20 @@ const mapStyle = [
             setdestination(destination);
           onChangeDestinationDebounced(destination);
           }}
-        />):null}
+        />):(<TextInput
+          placeholder="Enter destination..."
+          style={styles.destinationInput}
+          value={destination}
+          clearButtonMode="always"
+          onChangeText={destination => {
+            setdestination(destination);
+          onChangeDestinationDebounced(destination);
+          }}
+        />)}
            {test}
            {booking ? ( <View style={{position:'absolute', width:'85%',bottom:30,marginHorizontal:30,marginVertical:10,alignContent:'center',justifyContent:'center'}}>
       <TouchableOpacity style={{backgroundColor:Colors.primary,paddingHorizontal:14,height:45,borderRadius:30,alignContent:'center',justifyContent:'center'}}
-      onPress={setbooking(true)}>
+      >
       <Text style={{textAlign:'center',color:'white',fontWeight:'bold',fontSize:25}}>Book Your Ride</Text>
 </TouchableOpacity>
      </View>):null}
@@ -297,16 +313,16 @@ const styles = StyleSheet.create({
   },
   suggestions: {
 
-    backgroundColor: "white",
+    backgroundColor: Colors.hoono,
     width:"80%",
 
     padding: 5,
     fontSize: 18,
     borderWidth: 0.5,
-    marginLeft: 15,
-    marginRight: 15,
+    alignSelf:'center',
+
     padding: 5,
-    paddingLeft:15,
+    paddingLeft:30,
 
   },
   destinationInput: {
@@ -315,10 +331,9 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     marginTop: 90,
     borderTopLeftRadius:25,
-    marginLeft: 15,
-    marginRight: 15,
-    padding: 5,
-    paddingLeft:15,
+    
+    paddingLeft: 30,
+    alignSelf:'center',
     backgroundColor: "white"
   },
   
