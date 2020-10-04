@@ -147,7 +147,7 @@ setlocation(json);
  polylinegoogledri();
 
 }
-polylinegoogledri =() =>{
+const polylinegoogledri = () =>{
 
   let points = Polyline.decode(json.routes[0].overview_polyline.points);
    
