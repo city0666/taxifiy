@@ -54,3 +54,8 @@ export const getonlinedriver = ( ) => {
 
   }
 }
+
+export const bookingriderrequest = (userid,ridername,destination,currentlocation,traveltime, distance)=>{
+
+}
+export const findnearestdrivers =(curretntlocation)=>{}

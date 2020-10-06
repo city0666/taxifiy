@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React,{useState,useEffect,useCallback} from 'react';
+import React,{useState,useEffect,useCallback,useRef} from 'react';
 import { StyleSheet, Text, Keyboard,View,ScrollView,Input,Dimensions ,TextInput,ActivityIndicator,TouchableHighlight,Alert } from 'react-native';
 import MapView , { Polyline, Marker ,PROVIDER_GOOGLE} from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
@@ -9,21 +9,28 @@ import Colors from '../../constants/color';
 import apiKey from "./google_api_key";
 import * as rider from '../../store/actions/rider';
 import {useSelector,useDispatch} from 'react-redux';
-
+import PolyLine from "@mapbox/polyline";
+import mapStyle from './mapStyle';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { cos } from 'react-native-reanimated';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const RiderHome = ({navigation}) => {
+  let marker = null;
+  // let map = null;
+  const mapRef = useRef(null);
+
   const [longitude , setlongitude] = useState(0);
   const [latitude, setlatitude] = useState(0);
-  const [location, setlocation] = useState(null);
+  const [location, setlocation] = useState([]);
   const [errorMsg, setErrorMsg] = useState(null);
   const [booking,setbooking ] =useState(false);
   const [pointCoords , setpointCoords] = useState([]);
   const onChangeDestinationDebounced = _.debounce(onChangeDestination,1000); 
   const [destination, setdestination] = useState(""); 
   const [predictions, setpredictions] = useState([]); 
+  const [test01, settest] = useState([]);
   const dispatch = useDispatch();
   
   const {  mylocationlatitude,
@@ -56,24 +63,9 @@ const RiderHome = ({navigation}) => {
   
    
     cureentlocations()
-  
-  //   let points = Polyline.decode(googledir.routes[0].overview_polyline.points);
-  //   let coords = points.map((point, index) => {
-  //     return  {
-  //         latitude : point[0],
-  //         longitude : point[1]
-  //     }
-  // })
-  // setpointCoords(coords);
-    
+ 
 
   }, [])
-if (googledir != null)
-{
-  Alert.alert(googledir)
-}
-
-
 
 
 
@@ -94,6 +86,7 @@ async function onChangeDestination (destination) {
 }
 
 
+
   const test= predictions.map(prediction => (
     <TouchableOpacity
     // onPress={() => Alert.alert('ttt' , prediction.structured_formatting.main_text)}
@@ -102,7 +95,7 @@ async function onChangeDestination (destination) {
         getRouteDirections(
           prediction.place_id,
           prediction.structured_formatting.main_text )}
-      key={prediction.id}
+      key={prediction.id }
     >
       <View>
         <Text style={styles.suggestions}>
@@ -132,35 +125,39 @@ async function onChangeDestination (destination) {
 setpredictions([]);
 setdestination(destinationName);
 setbooking(true);
-   const token01 = JSON.stringify( mylocationlatitude);
-
-     Alert.alert(placeID,destinationPlaceId)
 setlocation(json);
 
+  console.log(location)
    
     Keyboard.dismiss();
-  } catch (error) {
-    console.error(error);
-  }
-
- dispatch(rider.getdirectionfromgoogle(  placeID,mylocationlongitude,mylocationlatitude));
- polylinegoogledri();
-
-}
-const polylinegoogledri = () =>{
-
-  let points = Polyline.decode(json.routes[0].overview_polyline.points);
-   
+    const points = PolyLine.decode(json.routes[0].overview_polyline.points);
     let coords = points.map((point, index) => {
       return  {
           latitude : point[0],
           longitude : point[1]
       }
   })
-setpointCoords(coords)
-map.fitToCoordinates(pointCoords);
+  setpointCoords(coords)
+  console.log(json.routes[0].legs[0].distance.text,"sreeraj")
+ // this.map.fitToCoordinates(pointCoords);
+// map.fitToCoordinates(pointCoords)
+mapRef.current.fitToCoordinates(pointCoords);
+    const token01 = JSON.stringify(json.routes[0].legs[0].duration.text  );
+    settest(token01);
+    setErrorMsg(destinationName)
+   // Alert.alert(token01)
 
+  } catch (error) {
+    console.error(error);
+  }
+
+ //dispatch(rider.getdirectionfromgoogle(  placeID,mylocationlongitude,mylocationlatitude));
 }
+// const polylinegoogledri = () =>{
+// console.log(location);
+
+
+// }
 
  // this.setState({
     //   pointCoords,
@@ -168,6 +165,26 @@ map.fitToCoordinates(pointCoords);
     //   destination: destinationName,
     //   routeResponse: json,
     // });
+
+
+    if (pointCoords.length > 1) {
+      marker = (
+        <Marker
+          coordinate={pointCoords[pointCoords.length - 1]}
+      //     title={test01}
+      //  description={ errorMsg}
+      
+      image={require('../../assets/pin100.png')}
+        />
+      );
+      // driverbutton =(
+      // <TouchableOpacity style={styles.bottomButton}
+      // onPress={() => this.requestDriver()}> 
+       
+      //   <Text style={styles.bottomButtonText}>Find Driver</Text>
+       
+      //   </TouchableOpacity>);
+    }
 if(latitude === null){
   return(
     <View style={{justifyContent:"center",flex:1,alignItems:"center"}}>
@@ -177,80 +194,14 @@ if(latitude === null){
     </View>
   )
 }
-const mapStyle = [
-  {
-    elementType: "geometry",
-    stylers: [
-      {
-        color: Colors.hoonoblack,
-        opacity:0.4
-      }
-    ]
-  },
-  {
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: Colors.hoonoblack
-      }
-    ]
-  },
-  {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [{ color: Colors.hoono }],
-  },
-  {
-    featureType: "road",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#212a37" }],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#9ca5b3" }],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "geometry",
-    stylers: [{ color: "#746855" }],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#1f2835" }],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#f3d19c" }],
-  },
-  // ...
-  {
-    featureType: "water",
-    elementType: "geometry.fill",
-    stylers: [
-      {
-        color: "#3e73fd"
-      }
-    ]
-  },
-  {
-    featureType: "water",
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: Colors.hoonoblack
-      }
-    ]
-  }
-];
+
 
   return (
     
     <View style={styles.container}>
         <MapView
-         
+            ref={ mapRef}
+            
           style={styles.map}
           provider={PROVIDER_GOOGLE}
          customMapStyle={mapStyle}
@@ -261,13 +212,15 @@ const mapStyle = [
             latitudeDelta: 0.015,
             longitudeDelta: 0.0121
           }}
+         
           showsUserLocation={true}
         >
            <Polyline
             coordinates={pointCoords}
             strokeWidth={4}
-            strokeColor="#7c2b83"
+            strokeColor="white"
           />
+          {marker}
         </MapView>
        
        
