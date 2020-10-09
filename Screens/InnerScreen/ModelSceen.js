@@ -111,7 +111,7 @@ const renderItem = ({ item }) => {
   }
 const test =predictions.map(prediction =>(
   <TouchableHighlight
-  onPress={() => Alert.alert('ttt' , prediction.structured_formatting.main_text)}
+ // onPress={() => Alert.alert('ttt' , prediction.structured_formatting.main_text)}
   key={prediction.id}
   >
   
@@ -132,6 +132,8 @@ const test =predictions.map(prediction =>(
 
          <Text style={{color: '#009387', marginTop:15,marginBottom: 15}}>onopensre</Text>
          </TouchableOpacity>
+
+
 
          <TextInput
           placeholder="Enter destination..."

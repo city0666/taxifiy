@@ -31,6 +31,7 @@ const RiderHome = ({navigation}) => {
   const [destination, setdestination] = useState(""); 
   const [predictions, setpredictions] = useState([]); 
   const [test01, settest] = useState([]);
+  const [namedir ,setnamedir ] = useState('');
   const dispatch = useDispatch();
   
   const {  mylocationlatitude,
@@ -87,7 +88,7 @@ async function onChangeDestination (destination) {
 
 
 
-  const test= predictions.map(prediction => (
+  const test= predictions.map((prediction,index) => (
     <TouchableOpacity
     // onPress={() => Alert.alert('ttt' , prediction.structured_formatting.main_text)}
 
@@ -95,7 +96,7 @@ async function onChangeDestination (destination) {
         getRouteDirections(
           prediction.place_id,
           prediction.structured_formatting.main_text )}
-      key={prediction.id }
+      key={ prediction.id,index }
     >
       <View>
         <Text style={styles.suggestions}>
@@ -120,16 +121,6 @@ async function onChangeDestination (destination) {
       }&destination=place_id:${destinationPlaceId}&key=${apiKey}`
     );
     const json = await response.json();
-   
-    
-setpredictions([]);
-setdestination(destinationName);
-setbooking(true);
-setlocation(json);
-
-  console.log(location)
-   
-    Keyboard.dismiss();
     const points = PolyLine.decode(json.routes[0].overview_polyline.points);
     let coords = points.map((point, index) => {
       return  {
@@ -138,19 +129,28 @@ setlocation(json);
       }
   })
   setpointCoords(coords)
+
+setpredictions([]);
+setdestination(destinationName);
+setbooking(true);
+setlocation(json);
+
+   
+    Keyboard.dismiss();
+    
+
   console.log(json.routes[0].legs[0].distance.text,"sreeraj")
  // this.map.fitToCoordinates(pointCoords);
 // map.fitToCoordinates(pointCoords)
-mapRef.current.fitToCoordinates(pointCoords);
     const token01 = JSON.stringify(json.routes[0].legs[0].duration.text  );
     settest(token01);
-    setErrorMsg(destinationName)
+    setErrorMsg(json.routes[0].legs[0].distance.text)
    // Alert.alert(token01)
 
   } catch (error) {
     console.error(error);
   }
-
+  mapRef.current.fitToCoordinates(pointCoords);
  //dispatch(rider.getdirectionfromgoogle(  placeID,mylocationlongitude,mylocationlatitude));
 }
 // const polylinegoogledri = () =>{
@@ -169,13 +169,27 @@ mapRef.current.fitToCoordinates(pointCoords);
 
     if (pointCoords.length > 1) {
       marker = (
-        <Marker
-          coordinate={pointCoords[pointCoords.length - 1]}
-      //     title={test01}
-      //  description={ errorMsg}
+      //   <Marker
+      //     coordinate={pointCoords[pointCoords.length - 1]}
+      //   title={test01}
+      //   description={ errorMsg}
       
-      image={require('../../assets/pin100.png')}
-        />
+      // image={require('../../assets/pin100.png')}
+      //   >
+      <Marker coordinate={pointCoords[pointCoords.length - 1]}>
+        <View style={{flexDirection:'row',  padding: 5,
+    borderRadius: 5,backgroundColor:'#000',alignContent:"center"}}>
+
+         <View style={styles.marker}>
+      <Text style={styles.text}>{test01}</Text>
+      <Text style={styles.text}>{errorMsg} </Text>
+
+            </View>
+            <View style={{ padding:15}}>
+            <Text style={styles.text}>{destination} </Text>
+            </View>
+            </View>
+      </Marker>
       );
       // driverbutton =(
       // <TouchableOpacity style={styles.bottomButton}
@@ -186,10 +200,10 @@ mapRef.current.fitToCoordinates(pointCoords);
       //   </TouchableOpacity>);
     }
 if(latitude === null){
+  console.log(latitude,'development');
   return(
     <View style={{justifyContent:"center",flex:1,alignItems:"center"}}>
           <ActivityIndicator size="large" color={Colors.primary} />
-
 
     </View>
   )
@@ -205,7 +219,9 @@ if(latitude === null){
           style={styles.map}
           provider={PROVIDER_GOOGLE}
          customMapStyle={mapStyle}
-
+        //  onLayout={()=>{
+        //   mapRef.current.fitToCoordinates(pointCoords)
+        // }}
           region={{
             latitude: latitude,
             longitude: longitude,
@@ -289,7 +305,16 @@ const styles = StyleSheet.create({
     alignSelf:'center',
     backgroundColor: "white"
   },
-  
+  marker: {
+    backgroundColor: "#550bbc",
+    padding: 5,
+    borderRadius: 5,
+    alignItems:'center'
+  },
+  text: {
+    color: "#FFF",
+    fontWeight: "bold"
+  }
   // container: {
   //   flex: 1,
   //   justifyContent: 'center',

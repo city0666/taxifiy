@@ -13,10 +13,10 @@ const NavController = ({ navigation }) => {
     return(
         <NavigationContainer>   
 
-        
- {!isAuth && didTryAutoLogin && <RootStackScreen></RootStackScreen>}
+<DrawerScreen/>
+ {/* {!isAuth && didTryAutoLogin && <RootStackScreen></RootStackScreen>}
 {isAuth && <DrawerScreen/>} 
-{!isAuth && !didTryAutoLogin && <StartupScreen />} 
+{!isAuth && !didTryAutoLogin && <StartupScreen />}  */}
         </NavigationContainer> 
 
 
