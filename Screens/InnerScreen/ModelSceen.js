@@ -1,11 +1,15 @@
 import React, { useRef,useState,useCallback } from 'react';
-import { View, Text,FlatList, Alert,TouchableOpacity,TouchableHighlight,StyleSheet, TextInput } from 'react-native';
+import { View, Text,FlatList, Alert,TouchableOpacity,TouchableHighlight,StyleSheet, TextInput ,Dimensions} from 'react-native';
 import { Modalize } from 'react-native-modalize';
 import * as rider from '../../store/actions/rider';
 import {useSelector,useDispatch} from 'react-redux';
+import MapView , { Polyline, Marker ,PROVIDER_GOOGLE} from 'react-native-maps';
+
 import apiKey from "./google_api_key";
 import _ from "lodash";
 
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const DATA = [
   {
@@ -28,44 +32,50 @@ const DATA = [
 //   </View>
 // );
 const Item = ({ item, onPress, style }) => (
-  <TouchableOpacity onPress={onPress} style={[styles.item, style]}>
-    <Text style={styles.title}>{item.title}</Text>
+ <View style={{flexDirection:'row'}}>
+ <TouchableOpacity onPress={onPress} style={[styles.item, style]}>
+    <Text style={styles.title}>{item.driverStatus}</Text>
+    <Text style={styles.title}>{item.user}</Text>
+
+
   </TouchableOpacity>
+  <View>
+  <Text style={styles.title}>{item.driverlocation.coordinates[0]}</Text>
+  <Text style={styles.title}>{item.driverlocation.coordinates[1]}</Text>
+  </View>
+
+  </View>
 );
 
     const ModelSceen = ({navigation}) => {
       const [selectedId, setSelectedId] = useState(null);
       const [destination, setdestination] = useState(""); 
      const [predictions, setpredictions ] = useState([]);
-     //const handler = useCallback(_.debounce(onChangeDestination, 2000), []);
 
       const dispatch = useDispatch();
       const {onlinedrivers} = useSelector((state) =>{
         return state.rider
         })
   const modalizeRef = useRef(null);
-//   const modalizeRef = useRef<Modalize>(null);
-// const renderItem = ({ item }) => (
-//   <Item title={item.title} />
-// );
 
 
-const onChangeDestinationDebounced = _.debounce(onChangeDestination,1000)
+
 const renderItem = ({ item }) => {
   const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
 
   return (
     <Item
       item={item}
-      onPress={() => setSelectedId(item.id)}
+
+      onPress={() => setSelectedId(item.user)}
       style={{ backgroundColor }}
     />
   );
 };
   const onOpen = () => {
-    modalizeRef.current?.open();
+    //modalizeRef.current?.open();
     const token01 = JSON.stringify( onlinedrivers);
-     Alert.alert("Alert Shows After 5 Seconds of Delay.",token01)
+  //   Alert.alert("Alert Shows After 5 Seconds of Delay.",token01)
   };
 
   const  logout=()=>{
@@ -76,78 +86,56 @@ const renderItem = ({ item }) => {
            // props.navigation.navigate('Auth');
          
      //Alert.alert(token01);
-     dispatch(rider.getonlinedriver())
+    // dispatch(rider.getonlinedriver())
 
-     setTimeout( async function(){
+    //  setTimeout( async function(){
   
-       //Put All Your Code Here, Which You Want To Execute After Some Delay Time.
-      //  const driverOnline = await AsyncStorage.getItem('driverOnline');
+    //    //Put All Your Code Here, Which You Want To Execute After Some Delay Time.
+    //   //  const driverOnline = await AsyncStorage.getItem('driverOnline');
       
-      //  const transformedData = JSON.parse(driverOnline);
-      //  const { onlinedriverID} = transformedData;
-       const token01 = JSON.stringify( onlinedrivers);
-
-
+    //   //  const transformedData = JSON.parse(driverOnline);
+    //   //  const { onlinedriverID} = transformedData;
+    const token01 = JSON.stringify( onlinedrivers);
+console.log(selectedId)
    
-       Alert.alert("Alert Shows After 5 Seconds of Delay.",token01)
+        Alert.alert("Alert : ", token01)
    
-     }, 5000);
+    //  }, 5000);
    
    
      
    }
-   async function onChangeDestination (destination) {
-    const apiUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?key=${apiKey}
-    &input=${destination}&location=37.785834,-122.406417&radius=2000`;
-    console.log('test',destination,apiUrl)
-    try {
-      const result = await fetch(apiUrl);
-      const json = await result.json();
-      setpredictions(json.predictions)
-     
-    } catch (err) {
-      console.error(err);
-    }
-  }
-const test =predictions.map(prediction =>(
-  <TouchableHighlight
- // onPress={() => Alert.alert('ttt' , prediction.structured_formatting.main_text)}
-  key={prediction.id}
-  >
-  
-  
-  <View>
-          <Text style={styles.suggestions}>
-            {prediction.structured_formatting.main_text}
-          </Text>
-        </View>
-  </TouchableHighlight>));
-  
+   
+
 
    
    return(
      <>
      <View style={styles.container}>
+        {/* <MapView
+            // ref={ mapRef}
+            
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          region={{
+            latitude: onlinedrivers.driverlocation.coordinates[0],
+            longitude: onlinedrivers.driverlocation.coordinates[1],
+            latitudeDelta:  0.05,
+            longitudeDelta: 0.05 * (SCREEN_WIDTH / SCREEN_HEIGHT),
+            statusBarHeight: 0,
+          }}
+         
+          showsUserLocation={true}
+        >
+          
+        </MapView> */}
+       
      <TouchableOpacity onPress={onOpen}>
 
          <Text style={{color: '#009387', marginTop:15,marginBottom: 15}}>onopensre</Text>
          </TouchableOpacity>
 
 
-
-         <TextInput
-          placeholder="Enter destination..."
-          style={styles.destinationInput}
-          value={destination}
-          clearButtonMode="always"
-          onChangeText={destination => {
-            setdestination(destination);
-          onChangeDestinationDebounced(destination);
-          }}
-          
-
-        />
-        {test}
      </View>
      <Modalize ref={modalizeRef}
            handleStyle={{
@@ -160,14 +148,15 @@ const test =predictions.map(prediction =>(
                         borderTopRightRadius:60
                     }}
                     alwaysOpen={150}
-                    scrollViewProps={{showsVerticalScrollIndicator:false}}>  
+                    // scrollViewProps={{showsVerticalScrollIndicator:false}}
+                    >  
                     <View style={{marginTop:40,alignItems:"center"}}>
                     <TouchableOpacity onPress={logout}>
 
 <Text style={{color: '#009387', marginTop:15,marginBottom: 15}}>hhh</Text>
 </TouchableOpacity>
   <FlatList
-        data={DATA}
+        data={onlinedrivers}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         extraData={selectedId}
@@ -177,7 +166,7 @@ const test =predictions.map(prediction =>(
         renderItem={renderItem}
         keyExtractor={item => item.id}
       /> */}
-                    </View>       
+  </View>       
 </Modalize>
 </>
    
@@ -187,12 +176,14 @@ const test =predictions.map(prediction =>(
 
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-      backgroundColor: 'gray',
-      alignItems: 'center',
-      
-    },destinationInput: {
+   container: {
+    ...StyleSheet.absoluteFillObject
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject
+  },
+   
+  destinationInput: {
       height: 50,
       borderWidth: 0.5,
       marginTop: 90,
@@ -221,7 +212,7 @@ const styles = StyleSheet.create({
       paddingLeft:15,
     },
     title: {
-      fontSize: 32,
+      fontSize: 10,
     },
   })
 export default ModelSceen;

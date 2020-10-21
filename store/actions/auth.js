@@ -23,7 +23,8 @@ export const createRegister = ( values) => {
     return async dispatch => {
       // any async code you want!
       const response = await fetch(
-        'http://54.87.154.240:8080/api/v1/users/signup/',
+       // 'http://54.87.154.240:8080/api/v1/users/signup/',
+       ' https://taxi.avvnee.com/api/v1/users/signup/',
         {
           method: 'POST',
           headers: {
@@ -75,7 +76,8 @@ export const createRegister = ( values) => {
     return async dispatch => {
       // any async code you want!
       const response = await fetch(
-        'http://54.87.154.240:8080/api/v1/users/login/',
+       // 'http://54.87.154.240:8080/api/v1/users/login/',
+        "https://taxi.avvnee.com/api/v1/users/login/",
         {
           method: 'POST',
           headers: {

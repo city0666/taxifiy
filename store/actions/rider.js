@@ -3,7 +3,7 @@ export const getonlinedriver = ( ) => {
     return async dispatch => {
       // any async code you want!
       const response = await fetch(
-        'http://54.87.154.240:8080/api/v1/onlinedriver/',
+        'https://taxi.avvnee.com/api/v1/onlinedriver/',
         // {
         // //  method: 'POST',
         //   headers: {
@@ -22,7 +22,7 @@ export const getonlinedriver = ( ) => {
    const resData =test.data
   
     //    const resData = await response.json();
-        console.log(resData)
+        console.log(test)
       if(resData.error )
       {
         console.log(resData.message);
@@ -56,6 +56,7 @@ export const getonlinedriver = ( ) => {
 }
 
 export const bookingriderrequest = (userid,ridername,destination,currentlocation,traveltime, distance)=>{
+  
 
 }
 export const findnearestdrivers =(curretntlocation)=>{}
